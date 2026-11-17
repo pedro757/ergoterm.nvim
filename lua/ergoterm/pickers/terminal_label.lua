@@ -1,13 +1,17 @@
 local M = {}
 
-local function read_proc(pid, file)
-  local proc_file = io.open(("/proc/%d/%s"):format(pid, file), "r")
-  if not proc_file then
+local function read_file(path, format)
+  local file = io.open(path, "r")
+  if not file then
     return nil
   end
-  local contents = proc_file:read("*a")
-  proc_file:close()
+  local contents = file:read(format)
+  file:close()
   return contents
+end
+
+local function read_proc(pid, file)
+  return read_file(("/proc/%d/%s"):format(pid, file), "*a")
 end
 
 local function foreground_pid(pid)
@@ -47,7 +51,40 @@ local function worktree_root(cwd)
       return dir
     end
   end
-  return cwd
+end
+
+local function worktree_branch(root)
+  local git_dir = vim.fs.joinpath(root, ".git")
+  local stat = vim.uv.fs_stat(git_dir)
+  if not stat then
+    return nil
+  elseif stat.type == "file" then
+    -- Linked worktrees keep their own HEAD in the directory named by the gitfile.
+    local gitfile = read_file(git_dir, "*l")
+    git_dir = gitfile and gitfile:gsub("\r$", ""):match("^gitdir: (.+)$")
+    if not git_dir then
+      return nil
+    end
+    local absolute = git_dir:sub(1, 1) == "/"
+      or (vim.fn.has("win32") == 1 and (git_dir:match("^\\") or git_dir:match("^%a:[/\\]")))
+    if not absolute then
+      git_dir = vim.fs.joinpath(root, git_dir)
+    end
+  elseif stat.type ~= "directory" then
+    return nil
+  end
+
+  local head_path = vim.fs.joinpath(git_dir, "HEAD")
+  local head_stat = vim.uv.fs_stat(head_path)
+  local head = head_stat and head_stat.type == "file" and read_file(head_path, "*l")
+  if not head then
+    return nil
+  end
+  head = head:gsub("\r$", "")
+  if (#head == 40 or #head == 64) and head:match("^%x+$") then
+    return "detached@" .. head:sub(1, 7)
+  end
+  return head:match("^ref: refs/heads/(.+)$")
 end
 
 ---@param term Terminal
@@ -55,8 +92,11 @@ end
 function M.format(term)
   local command, cwd = process_info(term)
   cwd = cwd or term:cwd()
-  local directory = cwd and worktree_root(cwd)
-  local location = directory and vim.fn.fnamemodify(directory, ":~") or "?"
+  local root = cwd and worktree_root(cwd)
+  local branch = root and worktree_branch(root)
+  local directory = root or cwd
+  local location = branch and (vim.fs.basename(root) .. ":" .. branch)
+    or (directory and vim.fn.fnamemodify(directory, ":~") or "?")
   local label = ("%s %s  |  %s  |  %s"):format(term:get_status_icon(), term.name, command or term.cmd, location)
   return vim.fn.strtrans(label)
 end

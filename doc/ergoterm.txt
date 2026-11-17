@@ -670,9 +670,10 @@ Use with `:TermSend decorator=name` or `term:send(input, {decorator = "name"})`.
         :TermSelect[!] [target=name]
 <
     Picker entries show the terminal name, foreground process name, and Git
-    worktree path (or working directory outside Git). When live process
-    information is unavailable, they show the configured command and launch
-    directory instead.
+    location as `worktree:branch`. Detached worktrees show
+    `worktree:detached@<commit>`. Outside Git, they show the working directory.
+    When live process information is unavailable, they use the configured
+    command and launch directory instead.
 
     Examples: >vim
         :TermSelect
