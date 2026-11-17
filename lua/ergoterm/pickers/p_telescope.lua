@@ -1,3 +1,6 @@
+---@module "ergoterm.pickers.terminal_label"
+local terminal_label = require("ergoterm.pickers.terminal_label")
+
 local M = {}
 
 
@@ -81,12 +84,11 @@ function M.select(terminals, prompt, definitions)
     finder = finders.new_table({
       results = terminals,
       entry_maker = function(term)
-        local status_icon = term:get_status_icon()
-        local display_name = status_icon .. " " .. term.name
+        local display_name = terminal_label.format(term)
         return {
           value = term,
           display = display_name,
-          ordinal = term.name,
+          ordinal = display_name,
         }
       end,
     }),

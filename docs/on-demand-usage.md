@@ -67,6 +67,10 @@ All options from [Terminal Defaults](../README.md#terminal-defaults) are support
 
 Open terminal picker or focus a specific terminal if `!` or `target` is provided.
 
+Picker entries show the terminal name, foreground process name, and Git worktree
+path (or working directory outside Git). When live process information is
+unavailable, the picker uses the configured command and launch directory.
+
 ```vim
 :TermSelect[!] [target=name]
 ```

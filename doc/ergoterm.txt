@@ -669,6 +669,11 @@ Use with `:TermSend decorator=name` or `term:send(input, {decorator = "name"})`.
     Open terminal picker or focus a specific terminal. >vim
         :TermSelect[!] [target=name]
 <
+    Picker entries show the terminal name, foreground process name, and Git
+    worktree path (or working directory outside Git). When live process
+    information is unavailable, they show the configured command and launch
+    directory instead.
+
     Examples: >vim
         :TermSelect
         :TermSelect!

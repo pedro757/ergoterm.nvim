@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Add the foreground command and Git worktree path to terminal picker entries.
 - Add `term:dir()` returning the computed terminal process working directory
 - Fix: scope the deferred mode restore to the window it was scheduled for so a
   `BufEnter` fired while another plugin (e.g. fzf-lua) restores windows no

@@ -1,3 +1,6 @@
+---@module "ergoterm.pickers.terminal_label"
+local terminal_label = require("ergoterm.pickers.terminal_label")
+
 local M = {}
 
 M._state = {
@@ -65,21 +68,12 @@ function M.previewer:gen_winopts()
   return vim.tbl_extend("keep", winopts, self.winopts)
 end
 
-function M._build_display_name_mapping(terminals)
-  M._state.display_to_terminal = {}
-
-  for _, term in pairs(terminals) do
-    local display_name = term:get_status_icon() .. " " .. term.name
-    M._state.display_to_terminal[display_name] = term
-  end
-end
-
 function M.get_options(terminals)
-  M._build_display_name_mapping(terminals)
-
+  M._state.display_to_terminal = {}
   local options = {}
   for _, term in pairs(terminals) do
-    local display_name = term:get_status_icon() .. " " .. term.name
+    local display_name = terminal_label.format(term)
+    M._state.display_to_terminal[display_name] = term
     table.insert(options, display_name)
   end
 
